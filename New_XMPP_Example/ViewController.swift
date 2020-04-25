@@ -7,14 +7,62 @@
 //
 
 import UIKit
+import XMPPFramework
 
 class ViewController: UIViewController {
 
-    override func viewDidLoad() {
+    var stream:XMPPStream!
+    
+      override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+    
+        stream = XMPPStream()
+        stream.addDelegate(self, delegateQueue: DispatchQueue.global())
+      
+        stream.myJID = XMPPJID(string: "shan@localhost")
+        
+        
+        do {
+            try stream.connect(withTimeout: 30)
+            
+        }
+        catch {
+            print("error occured in connecting")
+        }
     }
+    
+    func xmppStreamWillConnect(sender: XMPPStream!) {
+        print("will connect")
+    }
+    
+    func xmppStreamConnectDidTimeout(_ sender: XMPPStream) {
+        print("timeout:")
+    }
+    
+    func xmppStreamDidConnect(sender: XMPPStream!) {
+        print("connected")
+        
+        do {
+            try sender.authenticate(withPassword: "12345")
+        }
+        catch let err {
+            print("Error:\(err)")
+            
+        }
 
+    }
+    
+    
+    func xmppStreamDidAuthenticate(_ sender: XMPPStream) {
+        print("auth done")
+        sender.send(XMPPPresence())
+    }
+    
+
+    func xmppStream(_ sender: XMPPStream, didNotAuthenticate error: DDXMLElement) {
+        print("dint not auth")
+        print(error)
+    }
 
 }
 
